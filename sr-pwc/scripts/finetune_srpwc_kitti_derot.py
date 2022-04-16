@@ -16,8 +16,9 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-import tensorboardX
-from tensorboardX import SummaryWriter
+# import tensorboardX
+# from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append('..')
 
@@ -46,8 +47,12 @@ log_interval = 10
 save_interval = 1
 sintel_end_epoch = 190
 
+#salman's addition
+expt_folder = '/mnt/data/salman/LenslessDesign/models/srfnet/'
+logdir = expt_folder + 'runs_derot/'
+
 # visualizations
-writer = SummaryWriter()
+writer = SummaryWriter(log_dir=logdir)
 flowviz_transform = transforms.Compose([flow_utils.ToFlow(),
     flow_utils.ToRGBImage(),
     transforms.ToTensor()])
@@ -59,7 +64,7 @@ imageviz_transform = transforms.Compose([transforms.ToPILImage(),
 # data 
 nvset = 100
 training_set = 'kitti_derot'
-dataset = KITTIDerot('/mnt/tmp/data/kitti_derot/coarsesim', sequences=[0, 1, 2, 3],
+dataset = KITTIDerot('/mnt/data/salman/LenslessDesign/datasets/data_odometry_color/derotated_stride2', sequences=[0, 1, 2, 3],
         pyramid_levels=[2, 3, 4], fflip=-1)
 trainset, validset = torch.utils.data.random_split(dataset, (dataset.__len__() - nvset, nvset))
 
@@ -70,11 +75,11 @@ validloader = DataLoader(validset, batch_size=10, num_workers=4)
 # setup network
 model = SRPWCNet(SRResNet().cuda(), PWCNet().cuda(), freeze_pwc=False).cuda()
 if start_epoch > 0:
-    checkpoint_file = os.path.join(os.getcwd(), 'states', training_set, 'srpwc_%d.pkl' % start_epoch)
+    checkpoint_file = os.path.join(expt_folder, 'states', training_set, 'srpwc_%d.pkl' % start_epoch)
     model.load_state_dict(torch.load(checkpoint_file))
     print('Loading checkpoint')
 else:
-    checkpoint_file = os.path.join(os.getcwd(), 'states', 'sintel', 'srpwc_%d.pkl' % sintel_end_epoch)
+    checkpoint_file = os.path.join(expt_folder, 'states', 'sintel', 'srpwc_%d.pkl' % sintel_end_epoch)
     model.load_state_dict(torch.load(checkpoint_file))
     print('Loading Sintel model')
 
@@ -112,7 +117,8 @@ for epoch in range(start_epoch, max_epochs):
     writer.add_scalar('data/theta', cumtheta / m_samples, n_iter)
 
     for image1, image2, flow_gt, K, t in trainloader:
-
+        print(image1.shape)
+        print(flow_gt.shape)
         image1 = image1.cuda()
         image2 = image2.cuda()
         flow_gt = [flow.cuda() for flow in flow_gt]
@@ -152,7 +158,7 @@ for epoch in range(start_epoch, max_epochs):
 
 
     if (epoch + 1) % save_interval == 0:
-        checkpoint_file = os.path.join(os.getcwd(), 'states', training_set, 'srpwc_%d.pkl' % (epoch + 1))
+        checkpoint_file = os.path.join(expt_folder, 'states', training_set, 'srpwc_%d.pkl' % (epoch + 1))
         torch.save(model.state_dict(), checkpoint_file)
 
         

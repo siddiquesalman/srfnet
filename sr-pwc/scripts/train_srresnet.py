@@ -15,8 +15,9 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-import tensorboardX
-from tensorboardX import SummaryWriter
+# import tensorboard
+# from tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append('..')
 
@@ -42,13 +43,17 @@ log_interval = 10
 viz_interval = 100
 save_interval = 1
 
+#salman's addition
+expt_folder = '/mnt/data/salman/LenslessDesign/models/srfnet/'
+logdir = expt_folder + 'runs/'
+
 # visualizations
-writer = SummaryWriter()
+writer = SummaryWriter(log_dir=logdir)
 
 # data 
 nvset = 500
 training_set = 'flying_chairs'
-dataset = FlyingChairsSR('/mnt/tmp/data/flying_chairs/FlyingChairs_release/data',
+dataset = FlyingChairsSR('/mnt/data/salman/LenslessDesign/datasets/FlyingChairs_release/data/',
         input_scale=16, target_scale=4, crop_dim=(256, 256))
 trainset, validset = torch.utils.data.random_split(dataset, (dataset.__len__() - nvset, nvset))
 
@@ -66,7 +71,7 @@ bicubic_transform = transforms.Compose([
 # setup network
 model = SRResNet().cuda()
 if start_epoch > 0:
-    checkpoint_file = os.path.join(os.getcwd(), 'states', training_set,'srresnet_%d.pkl' % start_epoch)
+    checkpoint_file = os.path.join(expt_folder, 'states', training_set,'srresnet_%d.pkl' % start_epoch)
     model.load_state_dict(torch.load(checkpoint_file))
     print('Loading network')
 
@@ -111,7 +116,7 @@ for epoch in range(start_epoch, max_epochs):
 
 
     if ((epoch + 1) % save_interval == 0) and (epoch + 1) > 5:
-        checkpoint_file = os.path.join(os.getcwd(), 'states', training_set,'srresnet_%d.pkl' % (epoch + 1))
+        checkpoint_file = os.path.join(expt_folder, 'states', training_set,'srresnet_%d.pkl' % (epoch + 1))
         torch.save(model.state_dict(), checkpoint_file)
 
 

@@ -14,8 +14,9 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-import tensorboardX
-from tensorboardX import SummaryWriter
+# import tensorboard
+# from tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append('..')
 
@@ -43,8 +44,12 @@ max_epochs = 500
 log_interval = 10
 save_interval = 1
 
+#salman's addition
+expt_folder = '/mnt/data/salman/LenslessDesign/models/srfnet/'
+logdir = expt_folder + 'runs/'
+
 # visualizations
-writer = SummaryWriter()
+writer = SummaryWriter(log_dir=logdir)
 flowviz_transform = transforms.Compose([flow_utils.ToFlow(),
     flow_utils.ToRGBImage(),
     transforms.ToTensor()])
@@ -55,10 +60,14 @@ sample_transforms = transforms.Compose([
 target_transforms = transforms.Compose([
     flow_utils.ToTensor()])
 
+
+
+
+
 # data 
 nvset = 500
 training_set = 'flying_chairs'
-dataset = FlyingChairs('/mnt/tmp/data/flying_chairs/FlyingChairs_release/data',
+dataset = FlyingChairs('/mnt/data/salman/LenslessDesign/datasets/FlyingChairs_release/data/',
         transform=sample_transforms, target_transform=target_transforms,
         pyramid_levels=[2, 3, 4], flow_scale=20., crop_dim=(384, 448))
 trainset, validset = torch.utils.data.random_split(dataset, (dataset.__len__() - nvset, nvset))
@@ -70,7 +79,7 @@ validloader = DataLoader(validset, batch_size=10, num_workers=4)
 # setup network
 model = PWCNet().cuda()
 if start_epoch > 0:
-    checkpoint_file = os.path.join(os.getcwd(), 'states', training_set,'pwc_%d.pkl' % start_epoch)
+    checkpoint_file = os.path.join(expt_folder, 'states', training_set,'pwc_%d.pkl' % start_epoch)
     model.load_state_dict(torch.load(checkpoint_file))
     print('Loading network')
 
@@ -121,7 +130,7 @@ for epoch in range(start_epoch, max_epochs):
 
 
     if (epoch + 1) % save_interval == 0:
-        checkpoint_file = os.path.join(os.getcwd(), 'states', training_set,'pwc_%d.pkl' % (epoch + 1))
+        checkpoint_file = os.path.join(expt_folder, 'states', training_set,'pwc_%d.pkl' % (epoch + 1))
         torch.save(model.state_dict(), checkpoint_file)
 
 
