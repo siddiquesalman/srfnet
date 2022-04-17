@@ -92,11 +92,12 @@ print(trainset.__len__())
 
 model.train()
 for epoch in range(start_epoch, max_epochs):
-
     cumepe = 0
     cumpcent = 0
     cumtheta = 0
     m_samples = 0
+
+ 
     for image1, image2, flow_gt, K, t in validloader:
 
         image1 = image1.cuda()
@@ -117,13 +118,12 @@ for epoch in range(start_epoch, max_epochs):
     writer.add_scalar('data/theta', cumtheta / m_samples, n_iter)
 
     for image1, image2, flow_gt, K, t in trainloader:
-        print(image1.shape)
-        print(flow_gt.shape)
         image1 = image1.cuda()
         image2 = image2.cuda()
         flow_gt = [flow.cuda() for flow in flow_gt]
 
         flow_hat = model(image1, image2)
+
         loss = alpha[0] * criterion(flow_hat[0], flow_gt[0]) + \
             alpha[1] * criterion(flow_hat[1], flow_gt[1]) + \
             alpha[2] * criterion(flow_hat[2], flow_gt[2])

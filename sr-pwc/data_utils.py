@@ -1027,6 +1027,9 @@ class KITTIDerot(Dataset):
         # convert to tensor
         flow_levels = [self.flow_to_tensor(flow) for flow in flow_levels]
         mask = self.mask_to_tensor(mask)
+        #salmans addition
+        mask = mask > 0
+        #
         image1 = F.to_tensor(image1)
         image2 = F.to_tensor(image2)
 

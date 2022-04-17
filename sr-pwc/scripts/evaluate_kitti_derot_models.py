@@ -16,8 +16,9 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
-import tensorboardX
-from tensorboardX import SummaryWriter
+# import tensorboardX
+# from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append('..')
 
@@ -35,7 +36,10 @@ frame_offset = [1]
 window_size = len(frame_offset)
 sequences = [4, 5, 6, 7, 8, 9, 10]
 model_index = sorted([0, 1, 2, 3, 4, 5, 6])
-results_dir = '/home/t-arsha/kitti_derot_results'
+
+expt_folder = '/mnt/data/salman/LenslessDesign/models/srfnet/'
+
+results_dir = '/mnt/data/salman/LenslessDesign/models/srfnet/kitti_derot_results'
 if not os.path.isdir(results_dir):
     os.mkdir(results_dir)
 
@@ -45,7 +49,7 @@ checkpoints['pwc'] = os.path.join(os.getcwd(), 'states', 'kitti_flow', 'pwc_445.
 checkpoints['srresnet'] = os.path.join(os.getcwd(), 'states', 'kitti_flow', 'srresnet_410.pkl')
 checkpoints['srfnet'] = os.path.join(os.getcwd(), 'states', 'sintel', 'srpwc_190.pkl')
 checkpoints['srfnet-k'] = os.path.join(os.getcwd(), 'states', 'kitti_flow', 'srpwc_500.pkl')
-checkpoints['srfnet-ek'] = os.path.join(os.getcwd(), 'states', 'kitti_derot', 'srpwc_22_s0123.pkl')
+checkpoints['srfnet-ek'] = os.path.join(expt_folder, 'states', 'kitti_derot', 'srpwc_22_s0123.pkl')
 
 # models
 model_list = [
@@ -105,7 +109,7 @@ for sequence in sequences:
             model = model_list[i]
 
             # load new dataset
-            dataset = KITTIDerot('/mnt/tmp/data/kitti_derot/coarsesim_test', sequences=[sequence], 
+            dataset = KITTIDerot('/mnt/data/salman/LenslessDesign/datasets/data_odometry_color/derotated_stride1', sequences=[sequence], 
                     transform=input_transforms[i], input_scale=input_scales[i], frame_offset=[offset],
                     pyramid_levels=[2, 3, 4], data_augmentation=False, fflip=-1, return_id=True)
             testloader = DataLoader(dataset, batch_size=window_size, shuffle=False, num_workers=4)

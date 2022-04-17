@@ -77,10 +77,16 @@ class EpipolarLoss(nn.Module):
         percmask = torch.zeros(ts.shape[1]).byte().to(vals.device)
         percmask[:pid] = 1
 
+        #salmans addition
+        percmask = percmask > 0
+        #
+
         # create scene mask
         mask_shape = list(y.size())
         mask_shape[1] = 1
         scene_mask = torch.zeros(mask_shape).byte().to(y.device)
+        #salmans addition
+        scene_mask = scene_mask > 0 
         for i in range(batch_size):
             smv = scene_mask.view((batch_size, -1,))
             if vals[i, pid].item() < self.thresh:
